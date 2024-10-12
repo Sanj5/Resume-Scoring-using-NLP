@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Matcher</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #C6CEFF, #f4f4f4);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .container:hover {
+            transform: translateY(-5px);
+        }
+        
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        
+        label {
+            display: block;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus {
+            border-color: #4CAF50;
+        }
+        
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            background-color: #f9f9f9;
+        }
+        
+        button {
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            font-size: 18px;
+        }
+        
+        .loading {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4CAF50;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Resume Matcher</h1>
+
+        <form id="resumeForm">
+            <label for="jobDescription">Enter the Job Description:</label>
+            <textarea id="jobDescription" placeholder="Enter the job description"></textarea>
+
+            <label for="resumeUpload">Upload your resume:</label>
+            <input type="file" id="resumeUpload" accept=".txt, .pdf">
+
+            <button type="button" onclick="submitForm()">Submit</button>
+        </form>
+
+        <div id="loading" class="loading" style="display: none;">
+            Matching...
+            <div class="spinner"></div>
+        </div>
+
+        <div class="result" id="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        async function submitForm() {
+            const jobDescription = document.getElementById('jobDescription').value;
+            const resumeFile = document.getElementById('resumeUpload').files[0];
+
+            if (!jobDescription || !resumeFile) {
+                alert('Please provide a job description and upload a resume.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('job_description', jobDescription);
+            formData.append('resume', resumeFile);
+
+            // Display the loading spinner
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+
+            try {
+                const response = await fetch('http://localhost:8501/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                document.getElementById('result').innerHTML = 'Similarity Score: ' + result.similarity_score;
+                document.getElementById('result').style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = 'Error occurred. Please try again.';
+                document.getElementById('result').style.display = 'block';
+            } finally {
+                // Hide the loading spinner
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+
+</body>
+
+</html>
